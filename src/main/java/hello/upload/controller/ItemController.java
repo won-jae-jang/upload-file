@@ -63,6 +63,7 @@ public class ItemController {
     @ResponseBody
     @GetMapping("/images/{filename}")
     public Resource downloadImage(@PathVariable(value = "filename") String filename) throws MalformedURLException {
+        // "file:실제경로" 에서 "file"을 통해서 서버 내부의 실제 파일에 접근함
         return new UrlResource("file:" + fileStore.getFullPath(filename));
     }
 
@@ -75,8 +76,12 @@ public class ItemController {
 
         UrlResource resource = new UrlResource("file:" + fileStore.getFullPath(storeFileName));
         log.info("uploadFileName={}", uploadFileName);
+
+        //파일을 다운받을 때 파일명이 깨질 수 있으므로 인코딩
         String encodedUploadFileName = UriUtils.encode(uploadFileName, StandardCharsets.UTF_8);
+        //아래 내용을 헤더에 넣어줘야함 (규약) | 추가 안할 시 다운로드가 안된다
         String contentDisposition = "attachment; filename=\"" + encodedUploadFileName + "\"";
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                 .body(resource);
